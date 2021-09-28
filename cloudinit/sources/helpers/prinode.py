@@ -22,15 +22,16 @@ def get_metadata(url, timeout, retries, sec_between, agent):
     try:
         with EphemeralDHCPv4(connectivity_url=url):
             # Fetch the metadata
-            meta_data = read_metadata(url, timeout, retries, sec_between, agent)
+            v1 = read_metadata(url, timeout, retries, sec_between, agent)
     except (NoDHCPLeaseError) as exc:
-        LOG.error("NoDHCPLeaseError Exception: %s", exc)
+        LOG.error("Bailing, DHCP Exception: %s", exc)
         raise
 
-    return json.loads(meta_data)
+    return json.loads(v1)
+
 
 # Read the system information from SMBIOS
-def get_smbios_system():
+def get_sysinfo():
     return {
         'manufacturer': dmi.read_dmi_data("system-manufacturer"),
         'subid': dmi.read_dmi_data("system-serial-number")
@@ -38,17 +39,33 @@ def get_smbios_system():
 
 # Look for 'Prinode' in smbios
 # XML: <sysinfo type='smbios'><system><entry name='manufacturer'>Prinode</entry>
-def is_prinode():
-    system = get_smbios_system()
+# Assumes is Prinode is already checked
+# def is_baremetal():
+#     if get_sysinfo()['manufacturer'] != "Prinode":
+#         return True
+#     return False
 
-    if system['manufacturer'] == "Prinode":
+
+# Confirm is Prinode
+def is_prinode():
+    # VC2, VDC, and HFC use DMI
+    sysinfo = get_sysinfo()
+
+    if sysinfo['manufacturer'] == "Prinode":
         return True
     else:
         return False
 
+    # Baremetal requires a kernel parameter
+    # if "prinode" in util.get_cmdline().split():
+    #    return True
+
+    # return False
+
+
 # Read Metadata endpoint
 def read_metadata(url, timeout, retries, sec_between, agent):
-    url = url + "/meta-data.json"
+    url = "%s/v1.json" % url
 
     # Announce os details so we can handle non Prinode origin
     # images and provide correct vendordata generation.

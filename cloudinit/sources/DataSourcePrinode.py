@@ -67,7 +67,11 @@ class DataSourcePrinode(sources.DataSource):
         self.netcfg = prinode.generate_network_config(md['interfaces'])
 
         # Grab vendordata
-        # self.vendordata_raw = md['vendor-data']
+        self.vendordata_raw = md['vendor-data']
+
+        # Default hostname is "guest" for whitelabel
+        if self.metadata['local-hostname'] == "":
+            self.metadata['local-hostname'] = "guest"
 
         self.userdata_raw = md["user-data"]
         if self.userdata_raw == "":
@@ -76,23 +80,38 @@ class DataSourcePrinode(sources.DataSource):
     # Get the metadata by flag
     def get_metadata(self):
         return prinode.get_metadata(self.ds_cfg['url'],
-                                    self.ds_cfg['timeout'],
-                                    self.ds_cfg['retries'],
-                                    self.ds_cfg['wait'],
-                                    self.ds_cfg['user-agent'])
+                                  self.ds_cfg['timeout'],
+                                  self.ds_cfg['retries'],
+                                  self.ds_cfg['wait'],
+                                  self.ds_cfg['user-agent'])
 
     # Compare subid as instance id
     def check_instance_id(self, sys_cfg):
         if not prinode.is_prinode():
             return False
 
+        # Baremetal has no way to implement this in local
+        if prinode.is_baremetal():
+            return False
+
         subid = prinode.get_sysinfo()['subid']
         return sources.instance_id_matches_system_uuid(subid)
+
+    # Currently unsupported
+    @property
+    def launch_index(self):
+        return None
+
+    @property
+    def network_config(self):
+        return self.netcfg
+
 
 # Used to match classes to dependencies
 datasources = [
     (DataSourcePrinode, (sources.DEP_FILESYSTEM, )),
 ]
+
 
 # Return a list of data sources that match this set of dependencies
 def get_datasource_list(depends):
