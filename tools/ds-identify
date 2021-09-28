@@ -125,7 +125,8 @@ DI_DSNAME=""
 # be searched if there is no setting found in config.
 DI_DSLIST_DEFAULT="MAAS ConfigDrive NoCloud AltCloud Azure Bigstep \
 CloudSigma CloudStack DigitalOcean Vultr AliYun Ec2 GCE OpenNebula OpenStack \
-OVF SmartOS Scaleway Hetzner IBMCloud Oracle Exoscale RbxCloud UpCloud VMware"
+OVF SmartOS Scaleway Hetzner IBMCloud Oracle Exoscale RbxCloud UpCloud VMware \
+Prinode"
 DI_DSLIST=""
 DI_MODE=""
 DI_ON_FOUND=""
@@ -1302,6 +1303,11 @@ dscheck_Hetzner() {
 dscheck_Oracle() {
     local asset_tag="OracleCloud.com"
     dmi_chassis_asset_tag_matches "${asset_tag}" && return ${DS_FOUND}
+    return ${DS_NOT_FOUND}
+}
+
+dscheck_Prinode() {
+    dmi_sys_vendor_is Prinode && return ${DS_FOUND}
     return ${DS_NOT_FOUND}
 }
 

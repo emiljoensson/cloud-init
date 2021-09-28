@@ -34,6 +34,7 @@ KNOWN_CLOUD_NAMES = [
     'OpenStack',
     'Oracle',
     'OVF',
+    'Prinode',
     'RbxCloud - (HyperOne, Rootbox, Rubikon)',
     'OpenTelekomCloud',
     'SAP Converged Cloud',
